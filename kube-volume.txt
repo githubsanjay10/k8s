@@ -1,0 +1,95 @@
+PV.yaml
+---------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: calci-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany 
+  local:
+    path: /storage/data
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - minikube
+
+commands:
+------------
+to create a persistent volume
+-->kubectl apply -f pv-filename.yaml
+to list the persistent volume
+-->kubectl get pv
+to delete the pv 
+-->kubectl delete pv pv-name
+
+
+pvc.yaml
+----------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+commands:
+---------
+1.to create a pvc
+-->kubectl apply -f pvc-filename.yaml
+2.to list the pvc
+-->kubectl get pvc
+3.to delete the pvc
+-->kubectl delete pvc pvc-name
+
+
+
+deployment.yaml
+------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-dp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      name: my-pod
+      labels:
+        app: my-app
+    spec:
+      containers:
+         - name: nginx-cont
+           image: nginx
+           volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: demo-storage
+      volumes:
+        - name: demo-storage
+          persistentVolumeClaim:
+            claimName: my-pvc
+
+commands:
+to create deployment
+-->kubectl create -f deployment.yaml
+to list the deployment
+-->kubectl get deployment
+to delete the deployment
+-->kubectl delete deployment deployment-name
+to list the pods
+-->kubectl get pods
+
+to enter inside a node
+-->minikube ssh
